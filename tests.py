@@ -61,3 +61,17 @@ class TagBagTest(unittest.TestCase):
 
         matches = bag.find_matches('group/')
         self.assertEqual(len(matches), 5)
+
+    def test_entry_missing(self):
+        bag = TagBag()
+        bag.insert("/group/test", e)
+        bag.insert("/test", e)
+
+        matches = bag.find_matches("test")
+        self.assertEqual(len(matches), 2)
+        self.assertEqual(matches[0].dump_path(), "/group/test")
+        self.assertEqual(matches[1].dump_path(), "/test")
+
+        matches = bag.find_matches("/test")
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0].dump_path(), "/test")

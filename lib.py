@@ -73,6 +73,7 @@ class TagNode:
         self.value = value
 
     def is_root(self):
+        # FIXME assert that if null that is a root node?
         return self.value.startswith('/')
 
     def dump_path(self):
@@ -110,8 +111,9 @@ class TagBag:
         if len(matches) == 1:
             head = matches[0]
         elif len(matches) == 0:
-            self.keys[head] = [TagNode("/%s" % head)]
-            head = self.keys[head][0]
+            newNode = TagNode("/%s" % head)
+            self.keys[head] = self.keys.get(head, []) + [newNode]
+            head = newNode
         else:
             raise RuntimeError("Got non-sensical matches", matches)
 
@@ -160,6 +162,11 @@ class TagBag:
 
         possible = self.keys.get(first, [])
 
+        # doing a root lookup
+        if key.startswith('/'):
+            possible = [k for k in possible if k.is_root()]
+            assert(len(possible) == 1)
+
         for key in keys:
             new_possible = []
             for pos in possible:
@@ -169,6 +176,7 @@ class TagBag:
 
             possible = new_possible
 
+        # Handle asking for the children
         if key.endswith('/'):
             possible = list(chain(*[x.children for x in possible]))
 
